@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   DollarSign, Briefcase,
-  TrendingUp, Download, User, MapPin, Clock, X, Star, Zap
+  TrendingUp, User, MapPin, Clock, X, Star, Zap
 } from 'lucide-react';
 
 const Reports = () => {
@@ -49,9 +49,6 @@ const Reports = () => {
           </h1>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-4 italic">Aylıq Gəlir və Layihə Analizi</p>
         </div>
-        <button className="bg-yellow-500 text-black px-10 py-5 rounded-2xl font-black uppercase text-[11px] tracking-widest shadow-xl shadow-yellow-500/10 hover:bg-yellow-600 transition-all flex items-center gap-3 active:scale-95">
-          <Download size={18} /> Hesabatı Eksport Et
-        </button>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 relative z-10">
