@@ -60,12 +60,24 @@ const ProjectManifest = ({ items, onUpdate, calculateDays }) => {
               </td>
               <td className="p-6 text-center italic font-black text-xs">
                 {editingId === item.id ? (
-                   <div className="flex flex-col items-center gap-1">
-                     <span className="text-[9px] bg-indigo-100 px-2 rounded-full">{tempData.days} GÜN</span>
-                     <input type="text" inputMode="numeric" className="w-16 p-1 border rounded text-center" value={tempData.pricePerDay} onChange={e => {
-                       handleNumberInput(e);
-                       setTempData({...tempData, pricePerDay: e.target.value});
-                     }} />
+                   <div className="flex flex-col items-center gap-2">
+                    <span className="text-[9px] bg-indigo-100 px-2 rounded-full">{tempData.days} GÜN</span>
+                    <div className="grid grid-cols-2 gap-2 w-full">
+                      <div className="space-y-1">
+                        <label className="text-[8px] text-orange-600 font-bold">Maya</label>
+                        <input type="text" inputMode="numeric" placeholder="Maya" className="w-full p-1 border border-orange-200 rounded text-center text-xs bg-orange-50" value={tempData.costPerDay || 0} onChange={e => {
+                          handleNumberInput(e);
+                          setTempData({...tempData, costPerDay: e.target.value});
+                        }} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[8px] text-green-600 font-bold">Qiymət</label>
+                        <input type="text" inputMode="numeric" placeholder="Qiymət" className="w-full p-1 border border-green-200 rounded text-center text-xs bg-green-50" value={tempData.pricePerDay} onChange={e => {
+                          handleNumberInput(e);
+                          setTempData({...tempData, pricePerDay: e.target.value});
+                        }} />
+                      </div>
+                    </div>
                    </div>
                 ) : (
                   <div className="flex flex-col items-center gap-1">
