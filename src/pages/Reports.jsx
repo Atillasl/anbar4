@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowLeft, DollarSign, Calendar, Briefcase, 
+  DollarSign, Briefcase,
   TrendingUp, Download, User, MapPin, Clock, X, Star, Zap
 } from 'lucide-react';
 

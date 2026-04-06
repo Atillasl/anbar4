@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Plus, Search, Box, 
-  Package, Layout, ListFilter, MoveLeft, Zap
+  Plus, Search, Layout, ListFilter, MoveLeft, Zap
 } from 'lucide-react';
 import { useWarehouse } from '../hooks/useWarehouse';
 import ProductCard from '../Components/ProductCard';

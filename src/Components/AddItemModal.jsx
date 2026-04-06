@@ -19,7 +19,7 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays }) => 
     setWarehouses(whs);
     // İlk açılışda gün sayını hesabla
     setNewItem(prev => ({ ...prev, days: calculateDays(prev.startDate, prev.endDate) }));
-  }, []);
+  }, [calculateDays]);
 
   useEffect(() => {
     if (selectedWH) {
