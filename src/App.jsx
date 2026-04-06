@@ -14,7 +14,6 @@ import WarehouseDetail from './pages/WarehouseDetail'; // Anbarın daxili (Malla
 import Projects from './pages/Projects'; // Layihə siyahısı
 import ProjectDetail from './pages/ProjectDetail'; // Layihə idarəetmə və smeta
 import Statistics from './pages/Statistics';
-import Reports from './pages/Reports';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -55,7 +54,6 @@ const App = () => {
             
             {/* ANALİTİKA VƏ HESABATLAR */}
             <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
-            <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
             
             {/* 404 YÖNLƏNDİRMƏSİ */}
             <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} />} />

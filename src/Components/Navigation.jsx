@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Database, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Database } from 'lucide-react';
 
 const navLinks = [
   { 
@@ -16,11 +16,6 @@ const navLinks = [
     path: '/warehouses', 
     label: 'Anbar', 
     icon: <Database size={16} strokeWidth={3} /> 
-  },
-  { 
-    path: '/reports', 
-    label: 'Hesabatlar', 
-    icon: <BarChart3 size={16} strokeWidth={3} /> 
   },
 ];
 
