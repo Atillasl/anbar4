@@ -5,8 +5,8 @@ import {
   Package, Layout, ListFilter, MoveLeft, Zap
 } from 'lucide-react';
 import { useWarehouse } from '../hooks/useWarehouse';
-import ProductCard from '../components/ProductCard';
-import AddProductModal from '../components/AddProductModal';
+import ProductCard from '../Components/ProductCard';
+import AddProductModal from '../Components/AddProductModal';
 
 const WarehouseDetail = () => {
   const { id } = useParams();
@@ -50,28 +50,28 @@ const WarehouseDetail = () => {
       
       {/* HEADER */}
       <header className="bg-white/90 dark:bg-[#05070A]/90 backdrop-blur-xl border-b-2 border-slate-100 dark:border-yellow-500/10 sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto px-6 h-24 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-between">
           
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 sm:gap-8 min-w-0">
             <button 
               onClick={() => navigate('/warehouses')}
-              className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-yellow-500 transition-all font-black text-[10px] uppercase tracking-widest group"
+              className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-yellow-500 transition-all font-black text-[9px] sm:text-[10px] uppercase tracking-widest group flex-shrink-0"
             >
-              <MoveLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> Geri
+              <MoveLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Geri
             </button>
-            <div className="h-10 w-[1px] bg-slate-200 dark:bg-yellow-500/20" />
-            <div>
+            <div className="h-8 sm:h-10 w-[1px] bg-slate-200 dark:bg-yellow-500/20 flex-shrink-0" />
+            <div className="min-w-0">
               <div className="flex items-center gap-2 text-yellow-500 mb-0.5">
-                <Zap size={14} fill="currentColor" />
-                <span className="text-[9px] font-black uppercase tracking-[0.3em]">Sector Active</span>
+                <Zap size={12} fill="currentColor" className="flex-shrink-0" />
+                <span className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em]">Sector Active</span>
               </div>
-              <h1 className="text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase italic leading-none">
+              <h1 className="text-lg sm:text-2xl font-black tracking-tighter text-slate-900 dark:text-white uppercase italic leading-tight truncate">
                 {warehouse?.name || "Yüklenir..."}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 ml-4 flex-shrink-0">
             <div className="relative hidden lg:block">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-yellow-500/50" size={18} />
               <input 
@@ -83,15 +83,15 @@ const WarehouseDetail = () => {
             </div>
             <button 
               onClick={handleAddNewClick}
-              className="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-yellow-500/10 transition-all active:scale-95 flex items-center gap-2"
+              className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 sm:px-8 py-2.5 sm:py-3.5 rounded-lg sm:rounded-2xl font-black text-[9px] sm:text-[11px] uppercase tracking-widest shadow-xl shadow-yellow-500/10 transition-all active:scale-95 flex items-center gap-1 sm:gap-2 flex-shrink-0"
             >
-              <Plus size={18} strokeWidth={3} /> Yeni Mal
+              <Plus size={16} strokeWidth={3} /> <span className="hidden sm:inline">Yeni Mal</span><span className="inline sm:hidden">+</span>
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1400px] mx-auto p-8">
+      <main className="max-w-[1400px] mx-auto p-4 sm:p-8">
         
         {/* STATUS BAR */}
         <div className="mb-10 flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-6">

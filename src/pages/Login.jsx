@@ -3,6 +3,21 @@ import { Lock, Mail, Eye, EyeOff, UserPlus, LogIn, AlertCircle, Sparkles } from 
 // 1. Şəkli import edirik
 import MyLogo from '../assets/my-logo.jpeg';
 
+/**
+ * LOGIN COMPONENT - SECURITY WARNING
+ * 
+ * ⚠️ CRITICAL: This component stores passwords in plain text in localStorage
+ * This is a MAJOR SECURITY VULNERABILITY and should NOT be used in production
+ * 
+ * RECOMMENDED SOLUTION:
+ * 1. Use backend API with JWT tokens
+ * 2. Implement Firebase Authentication
+ * 3. Use Auth0 or Supabase for authentication
+ * 4. Store only JWT tokens, never store passwords
+ * 
+ * TODO: Replace this authentication system with a proper backend service
+ */
+
 const Login = ({ onLogin }) => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [showPassword, setShowPassword] = useState(false);

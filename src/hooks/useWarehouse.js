@@ -17,6 +17,15 @@ export const useWarehouse = (id) => {
     localStorage.setItem(`products_wh_${id}`, JSON.stringify(updated));
   };
 
+  // FIXED: Add missing updateProduct function
+  const updateProduct = (productId, updatedData) => {
+    const updated = products.map(p => 
+      p.id === productId ? { ...p, ...updatedData } : p
+    );
+    setProducts(updated);
+    localStorage.setItem(`products_wh_${id}`, JSON.stringify(updated));
+  };
+
   const deleteProduct = (pid) => {
     const updated = products.filter(p => p.id !== pid);
     setProducts(updated);
@@ -27,5 +36,5 @@ export const useWarehouse = (id) => {
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return { warehouse, products: filteredProducts, addProduct, deleteProduct, searchTerm, setSearchTerm };
+  return { warehouse, products: filteredProducts, addProduct, updateProduct, deleteProduct, searchTerm, setSearchTerm };
 };

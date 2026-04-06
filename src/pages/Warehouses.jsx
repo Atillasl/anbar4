@@ -34,32 +34,32 @@ const Warehouses = () => {
   };
 
   return (
-    <div className="p-6 md:p-12 max-w-7xl mx-auto bg-[#F8FAFC] dark:bg-[#05070A] min-h-screen pb-32 transition-colors">
+    <div className="p-4 sm:p-6 md:p-12 max-w-7xl mx-auto bg-[#F8FAFC] dark:bg-[#05070A] min-h-screen pb-32 transition-colors">
       
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
-        <div className="space-y-3">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 sm:mb-16 gap-4 sm:gap-6">
+        <div className="space-y-2 sm:space-y-3">
           <div className="flex items-center gap-2 text-yellow-500">
-            <Zap size={18} fill="currentColor" />
-            <span className="text-[10px] font-black uppercase tracking-[0.5em]">Inventory Systems</span>
+            <Zap size={16} fill="currentColor" className="flex-shrink-0" />
+            <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em]">Inventory Systems</span>
           </div>
-          <h1 className="text-6xl font-black text-slate-900 dark:text-white italic uppercase tracking-tighter leading-none">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-slate-900 dark:text-white italic uppercase tracking-tighter leading-tight">
             ANBARLAR<span className="text-yellow-500"></span>
           </h1>
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.4em] italic">
+          <p className="text-slate-400 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] italic">
             Texniki Sektorların İdarəedilməsi
           </p>
         </div>
         <button 
           onClick={() => setShowModal(true)}
-          className="bg-yellow-500 hover:bg-yellow-600 text-black px-10 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-yellow-500/10 active:scale-95"
+          className="bg-yellow-500 hover:bg-yellow-600 text-black px-6 sm:px-10 py-3 sm:py-5 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest flex items-center gap-2 sm:gap-3 transition-all shadow-xl shadow-yellow-500/10 active:scale-95 w-full sm:w-auto justify-center"
         >
-          <Plus size={20} strokeWidth={3} /> YENİ ANBAR
+          <Plus size={18} strokeWidth={3} /> YENİ ANBAR
         </button>
       </div>
 
       {/* WAREHOUSE GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
         {warehouses.map(wh => (
           <div 
             key={wh.id} 

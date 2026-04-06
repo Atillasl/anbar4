@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit3, Save, Trash2, FileText, PlusCircle, Calendar } from 'lucide-react';
 import { useProjectActions } from '../hooks/useProjectActions';
-import ProjectManifest from '../components/ProjectManifest';
-import FinanceCard from '../components/FinanceCard';
-import AddItemModal from '../components/AddItemModal';
+import ProjectManifest from '../Components/ProjectManifest';
+import FinanceCard from '../Components/FinanceCard';
+import AddItemModal from '../Components/AddItemModal';
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -44,13 +44,13 @@ const ProjectDetail = () => {
   };
 
   return (
-    <div className="p-6 md:p-12 max-w-[1400px] mx-auto min-h-screen pb-32 bg-[#F8FAFC] dark:bg-[#05070A] transition-colors duration-500 font-sans relative">
+    <div className="p-4 sm:p-6 md:p-12 max-w-[1400px] mx-auto min-h-screen pb-32 bg-[#F8FAFC] dark:bg-[#05070A] transition-colors duration-500 font-sans relative">
       
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-[100px] pointer-events-none" />
 
       {/* HEADER BÖLMƏSİ */}
-      <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 mb-12 relative z-10">
+      <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4 sm:gap-6 mb-8 sm:mb-12 relative z-10">
         <div className="space-y-4">
           <button 
             onClick={() => navigate('/projects')} 

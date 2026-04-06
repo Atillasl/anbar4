@@ -1,5 +1,6 @@
 import { X, Calendar, DollarSign, User, FileText, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { handleNumberInput } from '../utils/numberValidation';
 
 const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) => {
   const [formData, setFormData] = useState({ 
@@ -116,23 +117,31 @@ const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
                <DollarSign className="absolute left-5 top-5 text-emerald-500" size={18} />
-               <input 
-                type="number"
+               <input
+                type="text"
+                inputMode="numeric"
                 value={formData.budget}
-                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none border-2 border-transparent focus:border-emerald-500 transition-all" 
-                placeholder="ÜMUMİ BÜDCƏ (₼)" 
-                onChange={e => setFormData({...formData, budget: e.target.value})} 
+                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none border-2 border-transparent focus:border-emerald-500 transition-all"
+                placeholder="ÜMUMİ BÜDCƏ (₼)"
+                onChange={e => {
+                  handleNumberInput(e);
+                  setFormData({...formData, budget: e.target.value});
+                }}
                 required
               />
             </div>
             <div className="relative">
                <DollarSign className="absolute left-5 top-5 text-yellow-500" size={18} />
-               <input 
-                type="number"
+               <input
+                type="text"
+                inputMode="numeric"
                 value={formData.prepayment}
-                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none border-2 border-transparent focus:border-yellow-500 transition-all shadow-inner" 
-                placeholder="BEH / ÖNCƏDƏN ÖDƏNİŞ" 
-                onChange={e => setFormData({...formData, prepayment: e.target.value})} 
+                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none border-2 border-transparent focus:border-yellow-500 transition-all shadow-inner"
+                placeholder="BEH / ÖNCƏDƏN ÖDƏNİŞ"
+                onChange={e => {
+                  handleNumberInput(e);
+                  setFormData({...formData, prepayment: e.target.value});
+                }}
               />
             </div>
           </div>

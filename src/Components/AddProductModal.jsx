@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload, Package, DollarSign, Tag, Zap, ShieldCheck } from 'lucide-react';
+import { handleNumberInput } from '../utils/numberValidation';
 
 const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
   // initialData gələndə (redaktə üçün) state-i doldururuq, gəlməyəndə boşaldırıq
@@ -114,12 +115,16 @@ const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
             {/* MAYA DƏYƏRİ (Sənin istədiyin yeni xana) */}
             <div className="relative">
               <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 text-red-500/50" size={16} />
-              <input 
-                type="number"
+              <input
+                type="text"
+                inputMode="numeric"
                 placeholder="Maya (₼)"
                 className="w-full p-5 pl-12 bg-slate-50 dark:bg-white/5 rounded-2xl border-none font-bold outline-none dark:text-white text-xs focus:ring-2 ring-red-500/10 transition-all border-b-2 border-transparent focus:border-red-500/30"
                 value={formData.costPrice}
-                onChange={e => setFormData({...formData, costPrice: e.target.value})}
+                onChange={e => {
+                  handleNumberInput(e);
+                  setFormData({...formData, costPrice: e.target.value});
+                }}
                 required
               />
             </div>
@@ -128,12 +133,16 @@ const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
           {/* İCARƏ QİYMƏTİ */}
           <div className="relative">
             <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 text-green-500" size={18} />
-            <input 
-              type="number"
+            <input
+              type="text"
+              inputMode="numeric"
               placeholder="Günlük İcarə Qiyməti (₼)"
               className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 rounded-2xl border-none font-black outline-none dark:text-white text-sm focus:ring-2 ring-green-500/10 transition-all border-b-2 border-transparent focus:border-green-500/30"
               value={formData.price}
-              onChange={e => setFormData({...formData, price: e.target.value})}
+              onChange={e => {
+                handleNumberInput(e);
+                setFormData({...formData, price: e.target.value});
+              }}
               required
             />
           </div>

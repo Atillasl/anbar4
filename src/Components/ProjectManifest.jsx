@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Trash2, Edit3, CheckCircle2 } from 'lucide-react';
+import { handleNumberInput } from '../utils/numberValidation';
 
 const ProjectManifest = ({ items, onUpdate, calculateDays }) => {
   const [editingId, setEditingId] = useState(null);
@@ -61,9 +62,21 @@ const ProjectManifest = ({ items, onUpdate, calculateDays }) => {
                 {editingId === item.id ? (
                    <div className="flex flex-col items-center gap-1">
                      <span className="text-[9px] bg-indigo-100 px-2 rounded-full">{tempData.days} GÜN</span>
-                     <input type="number" className="w-16 p-1 border rounded text-center" value={tempData.pricePerDay} onChange={e => setTempData({...tempData, pricePerDay: e.target.value})} />
+                     <input type="text" inputMode="numeric" className="w-16 p-1 border rounded text-center" value={tempData.pricePerDay} onChange={e => {
+                       handleNumberInput(e);
+                       setTempData({...tempData, pricePerDay: e.target.value});
+                     }} />
                    </div>
-                ) : `${item.days} GÜN × ${item.pricePerDay} ₼`}
+                ) : (
+                  <div className="flex flex-col items-center gap-1">
+                    <span>{item.days} GÜN × {item.pricePerDay} ₼</span>
+                    {item.provider && item.provider !== 'Mənim Anbarım' && (
+                      <span className="text-[8px] text-orange-600 font-bold uppercase bg-orange-50 px-2 py-0.5 rounded-full">
+                        {item.provider}
+                      </span>
+                    )}
+                  </div>
+                )}
               </td>
               <td className="p-6 font-black italic">{editingId === item.id ? (tempData.days * tempData.pricePerDay) : item.total} ₼</td>
               <td className="p-6 text-right flex gap-3 justify-end">

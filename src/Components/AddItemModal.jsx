@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Database, ExternalLink } from 'lucide-react';
+import { handleNumberInput } from '../utils/numberValidation';
 
 const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays }) => {
   const [warehouses, setWarehouses] = useState([]);
@@ -79,15 +80,21 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays }) => 
             </>
           ) : (
             <>
-              <input placeholder="Tədarükçü adı" className="w-full p-5 bg-gray-50 rounded-2xl font-bold outline-none" 
+              <input placeholder="Tədarükçü adı" className="w-full p-5 bg-gray-50 rounded-2xl font-bold outline-none"
                      onChange={e => setNewItem({...newItem, provider: e.target.value})} />
-              <input placeholder="Avadanlıq adı" className="w-full p-5 bg-gray-50 rounded-2xl font-bold outline-none" 
+              <input placeholder="Avadanlıq adı" className="w-full p-5 bg-gray-50 rounded-2xl font-bold outline-none"
                      onChange={e => setNewItem({...newItem, name: e.target.value})} />
               <div className="grid grid-cols-2 gap-3">
-                <input type="number" placeholder="Aldığım (Maya)" className="p-5 bg-orange-50 rounded-2xl font-bold outline-none border border-orange-100" 
-                       onChange={e => setNewItem({...newItem, costPerDay: e.target.value})} />
-                <input type="number" placeholder="Verdiyim (Qiymət)" className="p-5 bg-green-50 rounded-2xl font-bold outline-none border border-green-100" 
-                       onChange={e => setNewItem({...newItem, pricePerDay: e.target.value})} />
+                <input type="text" inputMode="numeric" placeholder="Aldığım (Maya)" className="p-5 bg-orange-50 rounded-2xl font-bold outline-none border border-orange-100"
+                       onChange={e => {
+                         handleNumberInput(e);
+                         setNewItem({...newItem, costPerDay: e.target.value});
+                       }} />
+                <input type="text" inputMode="numeric" placeholder="Verdiyim (Qiymət)" className="p-5 bg-green-50 rounded-2xl font-bold outline-none border border-green-100"
+                       onChange={e => {
+                         handleNumberInput(e);
+                         setNewItem({...newItem, pricePerDay: e.target.value});
+                       }} />
               </div>
             </>
           )}
