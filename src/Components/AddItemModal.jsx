@@ -151,21 +151,23 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
                     Seçilmiş məhsul: {newItem.name}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="relative">
-                      <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2 mb-1 inline-block">Maya / gün</label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={newItem.costPerDay}
-                        placeholder="Maya"
-                        className="w-full p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl font-bold outline-none border border-orange-100 dark:border-orange-700/50 dark:text-white placeholder:text-slate-500"
-                        onChange={e => {
-                          handleNumberInput(e);
-                          setNewItem({...newItem, costPerDay: e.target.value});
-                        }}
-                      />
-                    </div>
-                    <div className="relative">
+                    {!(mode === 'internal' && initialData) && (
+                      <div className="relative">
+                        <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2 mb-1 inline-block">Maya / gün</label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={newItem.costPerDay}
+                          placeholder="Maya"
+                          className="w-full p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl font-bold outline-none border border-orange-100 dark:border-orange-700/50 dark:text-white placeholder:text-slate-500"
+                          onChange={e => {
+                            handleNumberInput(e);
+                            setNewItem({...newItem, costPerDay: e.target.value});
+                          }}
+                        />
+                      </div>
+                    )}
+                    <div className={`relative ${mode === 'internal' && initialData ? 'col-span-2' : ''}`}>
                       <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2 mb-1 inline-block">Qiymət / gün</label>
                       <input
                         type="text"
