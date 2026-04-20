@@ -4,7 +4,6 @@ import { Logo } from './Logo';
 import { Navigation } from './Navigation';
 import { MobileMenu } from './MobileMenu';
 import { ThemeToggle } from './ThemeToggle';
-import { RankBadge } from './RankBadge';
 import { UserActions } from './UserActions';
 
 const Header = ({ onLogout }) => {
@@ -46,9 +45,6 @@ const Header = ({ onLogout }) => {
               <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
             </div>
             
-            <div className="hidden sm:inline-flex">
-              <RankBadge />
-            </div>
           </div>
           
           {/* Profil və Çıxış */}

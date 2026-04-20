@@ -22,6 +22,7 @@ const ProjectDetail = () => {
   } = useProjectActions(id);
 
   const [showModal, setShowModal] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
 
   if (!project) {
     return (
@@ -41,6 +42,28 @@ const ProjectDetail = () => {
       localStorage.setItem('my_projects', JSON.stringify(filtered));
       navigate('/projects');
     }
+  };
+
+  const handleAddItem = (item) => {
+    const items = project.items || [];
+    if (editingItem) {
+      const updated = items.map(i => i.id === item.id ? item : i);
+      saveProject({ ...project, items: updated });
+    } else {
+      saveProject({ ...project, items: [...items, item] });
+    }
+    setShowModal(null);
+    setEditingItem(null);
+  };
+
+  const handleEditItem = (item) => {
+    setEditingItem(item);
+    setShowModal(item.type || 'internal');
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(null);
+    setEditingItem(null);
   };
 
   return (
@@ -127,13 +150,13 @@ const ProjectDetail = () => {
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Avadanlıq Siyahısı</h2>
               <div className="flex gap-2">
                 <button 
-                  onClick={() => setShowModal('internal')}
+                  onClick={() => { setShowModal('internal'); setEditingItem(null); }}
                   className="bg-yellow-500 text-black p-2 px-5 rounded-xl text-[9px] font-black uppercase flex items-center gap-2 hover:bg-yellow-600 transition-colors shadow-lg shadow-yellow-500/10"
                 >
                   <PlusCircle size={12}/> Anbardan
                 </button>
                 <button 
-                  onClick={() => setShowModal('external')}
+                  onClick={() => { setShowModal('external'); setEditingItem(null); }}
                   className="bg-white dark:bg-[#0D1117] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 p-2 px-5 rounded-xl text-[9px] font-black uppercase flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                 >
                   <PlusCircle size={12}/> Kənardan
@@ -143,8 +166,8 @@ const ProjectDetail = () => {
             
             <ProjectManifest 
               items={project.items || []} 
-              calculateDays={calculateDays} 
               onUpdate={(newItems) => saveProject({...project, items: newItems})} 
+              onEditItem={handleEditItem}
             />
           </div>
         </div>
@@ -174,11 +197,13 @@ const ProjectDetail = () => {
 
       {showModal && (
         <AddItemModal 
+          isOpen={!!showModal}
           mode={showModal}
           projectDates={{start: project.startDate, end: project.endDate}}
           calculateDays={calculateDays}
-          onClose={() => setShowModal(null)}
-          onAdd={(item) => saveProject({...project, items: [...(project.items || []), item]})}
+          onClose={handleCloseModal}
+          onAdd={handleAddItem}
+          initialData={editingItem}
         />
       )}
     </div>
@@ -186,3 +211,4 @@ const ProjectDetail = () => {
 };
 
 export default ProjectDetail;
+

@@ -5,7 +5,7 @@ import MyLogo from '../assets/my-logo.jpeg';
 export const Logo = () => (
   <Link to="/" className="flex items-center gap-3 group">
     {/* Loqo qutusu - Sarı vurğulu border ilə */}
-    <div className="relative w-12 h-12 rounded-full overflow-hidden shadow-lg group-hover:scale-110 transition-all duration-300 border-2 border-white dark:border-yellow-500/20 bg-white dark:bg-slate-900">
+    <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-lg group-hover:scale-110 transition-all duration-300 border-2 border-white dark:border-yellow-500/20 bg-white dark:bg-slate-900">
       <img 
         src={MyLogo} 
         alt="Falcon Logo" 

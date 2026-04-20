@@ -109,7 +109,7 @@ const Login = ({ onLogin }) => {
 
           <form onSubmit={handleAction} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-gray-400 uppercase ml-4 tracking-widest italic">Oyunçu Maili</label>
+              <label className="text-[10px] font-black text-gray-400 uppercase ml-4 tracking-widest italic">Mail</label>
               <div className="relative">
                 <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input 
@@ -149,7 +149,7 @@ const Login = ({ onLogin }) => {
               type="submit"
               className="w-full bg-yellow-500 text-black py-6 rounded-2xl font-black shadow-[0_10px_20px_-5px_rgba(234,179,8,0.3)] border-b-8 border-yellow-700 hover:brightness-110 active:border-b-0 active:translate-y-2 transition-all flex items-center justify-center gap-3 mt-4 text-xs uppercase tracking-[0.2em]"
             >
-              {isLoginMode ? <><LogIn size={20} strokeWidth={3}/> Oyuna Başla</> : <><UserPlus size={20} strokeWidth={3}/> Hesabını Aktivləşdir</>}
+              {isLoginMode ? <><LogIn size={20} strokeWidth={3}/> Daxil Ol</> : <><UserPlus size={20} strokeWidth={3}/> Hesabını Aktivləşdir</>}
             </button>
           </form>
 
