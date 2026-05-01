@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Plus, Search, Activity, Calendar, 
-  DollarSign, AlertCircle, Trash2, ExternalLink, Edit3, Zap 
+  AlertCircle, Trash2, ExternalLink, Edit3, Zap 
 } from 'lucide-react';
 import { useProjects } from '../hooks/useProjects';
 import CreateProjectModal from '../Components/CreateProjectModal';
@@ -25,7 +25,6 @@ const Projects = () => {
   } = useProjects();
 
   const activeProjects = projects.filter(p => p.status === 'Aktiv').length;
-  const totalBudget = projects.reduce((sum, p) => sum + Number(p.budget || 0), 0);
 
   const handleEdit = (e, proj) => {
     e.stopPropagation(); 
@@ -56,9 +55,9 @@ const Projects = () => {
                 <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Aktiv İşlər</p>
                 <p className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">{activeProjects}</p>
               </div>
-              <div className="border-l-2 border-emerald-500 pl-3 sm:pl-4">
-                <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Ümumi Büdcə</p>
-                <p className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">{totalBudget.toLocaleString()} ₼</p>
+              <div className="border-l-2 border-slate-300 dark:border-slate-700 pl-3 sm:pl-4">
+                <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest">Ümumi Layihə</p>
+                <p className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">{projects.length}</p>
               </div>
             </div>
           </div>
@@ -88,7 +87,7 @@ const Projects = () => {
             <div 
               key={proj.id} 
               onClick={() => navigate(`/project/${proj.id}`)}
-              className="group relative bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/5 rounded-[2.5rem] p-8 hover:shadow-2xl hover:shadow-yellow-500/5 transition-all duration-500 cursor-pointer overflow-hidden"
+              className="group relative bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/5 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-6 md:p-8 hover:shadow-2xl hover:shadow-yellow-500/5 transition-all duration-500 cursor-pointer overflow-hidden"
             >
               {/* Sarı Hover Effect */}
               <div className="absolute inset-0 bg-yellow-500/0 group-hover:bg-yellow-500/[0.02] transition-colors pointer-events-none" />
@@ -124,8 +123,8 @@ const Projects = () => {
               </h3>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Müştəri: {proj.client || 'Adsız'}</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-8 relative z-10">
-                <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-8 relative z-10">
+                <div className="bg-slate-50 dark:bg-white/5 p-3 sm:p-4 rounded-2xl">
                   <div className="flex items-center gap-2 text-slate-400 mb-1">
                     <Calendar size={12} />
                     <span className="text-[8px] font-black uppercase tracking-widest">Tarix Aralığı</span>
@@ -135,24 +134,13 @@ const Projects = () => {
                   </p>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl">
-                  <div className="flex items-center gap-2 text-slate-400 mb-1">
-                    <DollarSign size={12} />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Ümumi Büdcə</span>
-                  </div>
-                  <p className="text-[11px] font-black text-emerald-500 uppercase">
-                    {Number(proj.budget).toLocaleString()} ₼
-                  </p>
-                </div>
-
-                {/* BEH HİSSƏSİ - SARI VERSİYA */}
-                <div className="bg-yellow-50/50 dark:bg-yellow-500/5 p-4 rounded-2xl border border-yellow-100 dark:border-yellow-500/10">
+                <div className="bg-yellow-50/50 dark:bg-yellow-500/5 p-3 sm:p-4 rounded-2xl border border-yellow-100 dark:border-yellow-500/10">
                   <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-500 mb-1">
                     <Zap size={12} />
-                    <span className="text-[8px] font-black uppercase tracking-widest">Ön Ödəniş (Beh)</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest">Status</span>
                   </div>
                   <p className="text-[11px] font-black text-yellow-700 dark:text-yellow-500 uppercase">
-                    {Number(proj.prepayment || 0).toLocaleString()} ₼
+                    {proj.status || 'Aktiv'}
                   </p>
                 </div>
               </div>
@@ -175,14 +163,18 @@ const Projects = () => {
         isOpen={isModalOpen} 
         onClose={() => { setIsModalOpen(false); setEditingProject(null); }} 
         initialData={editingProject} 
-        onConfirm={(formData) => {
-          if (editingProject) {
-            updateProject(editingProject.id, formData);
-          } else {
-            addProject(formData);
+        onConfirm={async (formData) => {
+          try {
+            if (editingProject) {
+              await updateProject(editingProject.id, formData);
+            } else {
+              await addProject(formData);
+            }
+            setIsModalOpen(false);
+            setEditingProject(null);
+          } catch (error) {
+            alert(error.message || 'Layihə əməliyyatı uğursuz oldu.');
           }
-          setIsModalOpen(false);
-          setEditingProject(null);
         }} 
       />
     </div>

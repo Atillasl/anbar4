@@ -4,6 +4,7 @@ import {
   BarChart3, TrendingUp, AlertTriangle, 
   CheckCircle2, Clock, ArrowLeft, Layers, Sparkles, Target
 } from 'lucide-react';
+import { authFetch } from '../utils/apiClient';
 
 const Statistics = () => {
   const navigate = useNavigate();
@@ -16,33 +17,47 @@ const Statistics = () => {
   });
 
   useEffect(() => {
-    const warehouses = JSON.parse(localStorage.getItem('my_warehouses') || '[]');
-    let totalP = 0;
-    let totalR = 0;
-    let whAnalytics = [];
+    const loadStats = async () => {
+      try {
+        const warehousesRes = await authFetch('/api/warehouses');
+        const warehousesData = await warehousesRes.json().catch(() => ({}));
+        const warehouses = Array.isArray(warehousesData.warehouses) ? warehousesData.warehouses : [];
 
-    warehouses.forEach(wh => {
-      const products = JSON.parse(localStorage.getItem(`products_wh_${wh.id}`) || '[]');
-      const rentedInWh = products.filter(p => p.status === 'Rented').length;
-      
-      totalP += products.length;
-      totalR += rentedInWh;
+        let totalP = 0;
+        let totalR = 0;
 
-      whAnalytics.push({
-        name: wh.name,
-        count: products.length,
-        rented: rentedInWh,
-        percent: products.length > 0 ? Math.round((rentedInWh / products.length) * 100) : 0
-      });
-    });
+        const warehouseStats = await Promise.all(
+          warehouses.map(async (wh) => {
+            const productsRes = await authFetch(`/api/warehouses/${wh.id}/products`);
+            const productsData = await productsRes.json().catch(() => ({}));
+            const products = Array.isArray(productsData.products) ? productsData.products : [];
+            const rentedInWh = products.filter((p) => p.status === 'Rented').length;
 
-    setData({
-      totalWarehouses: warehouses.length,
-      totalProducts: totalP,
-      rentedRate: totalP > 0 ? Math.round((totalR / totalP) * 100) : 0,
-      warehouseStats: whAnalytics,
-      efficiency: totalP > 0 ? (totalR * 1.5).toFixed(1) : "0.0"
-    });
+            totalP += products.length;
+            totalR += rentedInWh;
+
+            return {
+              name: wh.name,
+              count: products.length,
+              rented: rentedInWh,
+              percent: products.length > 0 ? Math.round((rentedInWh / products.length) * 100) : 0,
+            };
+          })
+        );
+
+        setData({
+          totalWarehouses: warehouses.length,
+          totalProducts: totalP,
+          rentedRate: totalP > 0 ? Math.round((totalR / totalP) * 100) : 0,
+          warehouseStats,
+          efficiency: totalP > 0 ? (totalR * 1.5).toFixed(1) : '0.0',
+        });
+      } catch (error) {
+        console.error('Statistika yüklənmədi:', error);
+      }
+    };
+
+    loadStats();
   }, []);
 
   return (

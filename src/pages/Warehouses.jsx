@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Database, ChevronRight, Package, HardDrive, Trash2, Zap } from 'lucide-react';
+import { authFetch } from '../utils/apiClient';
+
+const mapWarehouse = (item) => ({
+  id: item.id,
+  name: item.name,
+  description: item.description,
+  createdAt: item.created_at,
+});
 
 const Warehouses = () => {
   const navigate = useNavigate();
@@ -9,27 +17,48 @@ const Warehouses = () => {
   const [newWH, setNewWH] = useState({ name: '', description: '' });
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('my_warehouses') || '[]');
-    setWarehouses(saved);
+    const load = async () => {
+      try {
+        const response = await authFetch('/api/warehouses');
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) return;
+        setWarehouses(Array.isArray(data.warehouses) ? data.warehouses.map(mapWarehouse) : []);
+      } catch (error) {
+        console.error('Anbarlar yüklənmədi:', error);
+      }
+    };
+
+    load();
   }, []);
 
-  const handleCreate = (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
-    const warehouseWithId = { ...newWH, id: Date.now() };
-    const updated = [...warehouses, warehouseWithId];
-    localStorage.setItem('my_warehouses', JSON.stringify(updated));
-    setWarehouses(updated);
+    const response = await authFetch('/api/warehouses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newWH),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.warehouse) {
+      alert(data.error || 'Anbar yaradıla bilmədi.');
+      return;
+    }
+
+    setWarehouses((prev) => [mapWarehouse(data.warehouse), ...prev]);
     setShowModal(false);
     setNewWH({ name: '', description: '' });
   };
 
-  const deleteWarehouse = (e, id) => {
+  const deleteWarehouse = async (e, id) => {
     e.stopPropagation();
     if(window.confirm("Bu sektoru və içindəki bütün malları silmək istəyirsiniz?")) {
-        const updated = warehouses.filter(w => w.id !== id);
-        setWarehouses(updated);
-        localStorage.setItem('my_warehouses', JSON.stringify(updated));
-        localStorage.removeItem(`products_wh_${id}`);
+        const response = await authFetch(`/api/warehouses/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          alert(data.error || 'Anbar silinə bilmədi.');
+          return;
+        }
+        setWarehouses((prev) => prev.filter((w) => w.id !== id));
     }
   };
 
@@ -64,7 +93,7 @@ const Warehouses = () => {
           <div 
             key={wh.id} 
             onClick={() => navigate(`/warehouse/${wh.id}`)}
-            className="group bg-white dark:bg-[#0D1117] p-10 rounded-[3.5rem] border-2 border-transparent hover:border-yellow-500 transition-all cursor-pointer shadow-sm relative overflow-hidden"
+            className="group bg-white dark:bg-[#0D1117] p-6 sm:p-8 md:p-10 rounded-[2.5rem] sm:rounded-[3.5rem] border-2 border-transparent hover:border-yellow-500 transition-all cursor-pointer shadow-sm relative overflow-hidden"
           >
             {/* Arxa fon dekorasiyası */}
             <Database className="absolute -right-6 -bottom-6 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 group-hover:rotate-12 transition-all duration-700 text-yellow-500" size={150} />

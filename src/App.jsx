@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // KOMPONENTLƏR
@@ -14,16 +14,46 @@ import WarehouseDetail from './pages/WarehouseDetail'; // Anbarın daxili (Malla
 import Projects from './pages/Projects'; // Layihə siyahısı
 import ProjectDetail from './pages/ProjectDetail'; // Layihə idarəetmə və smeta
 import Statistics from './pages/Statistics';
+import { fetchMe } from './utils/apiClient';
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     localStorage.getItem('isLoggedIn') === 'true'
   );
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('auth_access_token');
+    localStorage.removeItem('auth_refresh_token');
     setIsAuthenticated(false);
   };
+
+  useEffect(() => {
+    const initAuth = async () => {
+      if (localStorage.getItem('isLoggedIn') !== 'true') {
+        setCheckingAuth(false);
+        return;
+      }
+
+      const result = await fetchMe();
+      if (!result.ok) {
+        handleLogout();
+      }
+
+      setCheckingAuth(false);
+    };
+
+    initAuth();
+  }, []);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-[#05070A] text-slate-500 dark:text-slate-400">
+        Yoxlanılır...
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>

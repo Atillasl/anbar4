@@ -1,6 +1,5 @@
-import { X, Calendar, DollarSign, User, FileText, Zap } from 'lucide-react';
+import { X, Calendar, User, FileText, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { handleNumberInput } from '../utils/numberValidation';
 
 const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) => {
   const [formData, setFormData] = useState({ 
@@ -8,25 +7,48 @@ const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) 
     client: '', 
     startDate: '', 
     endDate: '', 
-    prepayment: '', 
-    notes: '',
-    budget: ''
+    notes: ''
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        setFormData(initialData);
+        setFormData({
+          name: initialData.name || '',
+          client: initialData.client || '',
+          startDate: initialData.startDate || '',
+          endDate: initialData.endDate || '',
+          notes: initialData.notes || ''
+        });
       } else {
-        setFormData({ name: '', client: '', startDate: '', endDate: '', prepayment: '', notes: '', budget: '' });
+        setFormData({ name: '', client: '', startDate: '', endDate: '', notes: '' });
       }
+      setErrors({});
     }
   }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
+  const validate = () => {
+    const e = {};
+    if (!formData.name.trim()) e.name = 'Layihə adı mütləqdir';
+    if (!formData.client.trim()) e.client = 'Müştəri adı mütləqdir';
+    if (!formData.startDate) e.startDate = 'Başlama tarixi mütləqdir';
+    if (!formData.endDate) e.endDate = 'Bitmə tarixi mütləqdir';
+    if (formData.startDate && formData.endDate && formData.endDate < formData.startDate) {
+      e.endDate = 'Bitmə tarixi başlama tarixindən əvvəl ola bilməz';
+    }
+    return e;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     onConfirm({ 
       ...formData, 
       id: initialData ? initialData.id : Date.now(), 
@@ -34,7 +56,6 @@ const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) 
       items: initialData ? initialData.items : [],
       progress: initialData ? initialData.progress : 0 
     });
-    onClose();
   };
 
   return (
@@ -66,22 +87,22 @@ const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) 
             <div className="relative">
                <Zap className="absolute left-5 top-5 text-yellow-500" size={18} />
                <input 
-                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white border-2 border-transparent focus:border-yellow-500 rounded-2xl font-bold outline-none transition-all placeholder:text-slate-400" 
+                className={`w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white border-2 ${errors.name ? 'border-red-500' : 'border-transparent'} focus:border-yellow-500 rounded-2xl font-bold outline-none transition-all placeholder:text-slate-400`}
                 placeholder="LAYİHƏ ADI" 
                 value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})} 
-                required
+                onChange={e => { setFormData({...formData, name: e.target.value}); setErrors({...errors, name: ''}); }} 
               />
+              {errors.name && <p className="text-[10px] font-black text-red-500 ml-5 mt-1 uppercase tracking-wider">{errors.name}</p>}
             </div>
             <div className="relative">
                <User className="absolute left-5 top-5 text-slate-400" size={18} />
                <input 
-                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white border-2 border-transparent focus:border-yellow-500 rounded-2xl font-bold outline-none transition-all" 
+                className={`w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white border-2 ${errors.client ? 'border-red-500' : 'border-transparent'} focus:border-yellow-500 rounded-2xl font-bold outline-none transition-all`}
                 placeholder="MÜŞTƏRİ / ŞİRKƏT" 
                 value={formData.client}
-                onChange={e => setFormData({...formData, client: e.target.value})} 
-                required
+                onChange={e => { setFormData({...formData, client: e.target.value}); setErrors({...errors, client: ''}); }} 
               />
+              {errors.client && <p className="text-[10px] font-black text-red-500 ml-5 mt-1 uppercase tracking-wider">{errors.client}</p>}
             </div>
           </div>
 
@@ -94,10 +115,10 @@ const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) 
               <input 
                 type="date"
                 value={formData.startDate}
-                className="w-full p-5 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none focus:ring-2 ring-yellow-500/20 transition-all uppercase text-xs" 
-                onChange={e => setFormData({...formData, startDate: e.target.value})} 
-                required
+                className={`w-full p-5 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none focus:ring-2 ring-yellow-500/20 transition-all uppercase text-xs border-2 ${errors.startDate ? 'border-red-500' : 'border-transparent'}`}
+                onChange={e => { setFormData({...formData, startDate: e.target.value}); setErrors({...errors, startDate: ''}); }} 
               />
+              {errors.startDate && <p className="text-[10px] font-black text-red-500 ml-2 uppercase tracking-wider">{errors.startDate}</p>}
             </div>
             <div className="space-y-2 uppercase">
               <label className="text-[9px] font-black text-slate-400 ml-5 tracking-widest flex items-center gap-2">
@@ -106,43 +127,11 @@ const CreateProjectModal = ({ isOpen, onClose, onConfirm, initialData = null }) 
               <input 
                 type="date"
                 value={formData.endDate}
-                className="w-full p-5 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none focus:ring-2 ring-yellow-500/20 transition-all uppercase text-xs" 
-                onChange={e => setFormData({...formData, endDate: e.target.value})} 
-                required
+                min={formData.startDate || undefined}
+                className={`w-full p-5 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none focus:ring-2 ring-yellow-500/20 transition-all uppercase text-xs border-2 ${errors.endDate ? 'border-red-500' : 'border-transparent'}`}
+                onChange={e => { setFormData({...formData, endDate: e.target.value}); setErrors({...errors, endDate: ''}); }} 
               />
-            </div>
-          </div>
-
-          {/* Büdcə və Beh */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative">
-               <DollarSign className="absolute left-5 top-5 text-emerald-500" size={18} />
-               <input
-                type="text"
-                inputMode="numeric"
-                value={formData.budget}
-                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none border-2 border-transparent focus:border-emerald-500 transition-all"
-                placeholder="ÜMUMİ BÜDCƏ (₼)"
-                onChange={e => {
-                  handleNumberInput(e);
-                  setFormData({...formData, budget: e.target.value});
-                }}
-                required
-              />
-            </div>
-            <div className="relative">
-               <DollarSign className="absolute left-5 top-5 text-yellow-500" size={18} />
-               <input
-                type="text"
-                inputMode="numeric"
-                value={formData.prepayment}
-                className="w-full p-5 pl-14 bg-slate-50 dark:bg-white/5 dark:text-white rounded-2xl font-bold outline-none border-2 border-transparent focus:border-yellow-500 transition-all shadow-inner"
-                placeholder="BEH / ÖNCƏDƏN ÖDƏNİŞ"
-                onChange={e => {
-                  handleNumberInput(e);
-                  setFormData({...formData, prepayment: e.target.value});
-                }}
-              />
+              {errors.endDate && <p className="text-[10px] font-black text-red-500 ml-2 uppercase tracking-wider">{errors.endDate}</p>}
             </div>
           </div>
 

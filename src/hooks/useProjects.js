@@ -1,69 +1,92 @@
 import { useState, useEffect } from 'react';
+import { authFetch } from '../utils/apiClient';
+
+const mapProject = (item) => ({
+  id: item.id,
+  name: item.name,
+  client: item.client,
+  startDate: item.start_date,
+  endDate: item.end_date,
+  prepayment: item.prepayment,
+  budget: item.budget,
+  notes: item.notes,
+  status: item.status,
+  progress: item.progress,
+  createdAt: item.created_at,
+});
 
 export const useProjects = () => {
   const [projects, setProjects] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // 1. Layihələri yükləyirik
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('my_projects') || '[]');
-    setProjects(saved);
+    const load = async () => {
+      try {
+        const response = await authFetch('/api/projects');
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) return;
+        setProjects(Array.isArray(data.projects) ? data.projects.map(mapProject) : []);
+      } catch (error) {
+        console.error('Layihələr yüklənmədi:', error);
+      }
+    };
+
+    load();
   }, []);
 
-  // Yardımçı funksiya: Həm state-i, həm localStorage-ı eyni anda yeniləyir
-  const saveAndSet = (newList) => {
-    setProjects(newList);
-    localStorage.setItem('my_projects', JSON.stringify(newList));
+  const addProject = async (newProj) => {
+    const response = await authFetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProj),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.project) {
+      throw new Error(data.error || 'Layihə əlavə edilə bilmədi.');
+    }
+
+    setProjects((prev) => [mapProject(data.project), ...prev]);
   };
 
-  // 2. YENİ LAYİHƏ ƏLAVƏ ETMƏK (Büdcə və Tarix daxil)
-  const addProject = (newProj) => {
-    const projectWithData = {
-      ...newProj,
-      id: Date.now(), // Unikal ID
-      budget: Number(newProj.budget || 0), // Büdcənin rəqəm olmasını təmin edirik
-      createdAt: new Date().toISOString()
-    };
-    const updated = [projectWithData, ...projects];
-    saveAndSet(updated);
+  const updateProject = async (id, updatedData) => {
+    const response = await authFetch(`/api/projects/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedData),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.project) {
+      throw new Error(data.error || 'Layihə yenilənə bilmədi.');
+    }
+
+    const mapped = mapProject(data.project);
+    setProjects((prev) => prev.map((p) => (p.id === id ? mapped : p)));
   };
 
-  // 3. LAYİHƏNİ REDAKTƏ ETMƏK (BU YENİDİR!)
-  // Bu funksiya bütün sahələri (tarix, ad və s.) yeniləməyə imkan verir
-  const updateProject = (id, updatedData) => {
-    const updated = projects.map(p => 
-      p.id === id 
-        ? { 
-            ...p, 
-            ...updatedData, 
-            budget: Number(updatedData.budget || p.budget) // Büdcəni yenə rəqəmə çeviririk
-          } 
-        : p
-    );
-    saveAndSet(updated);
-  };
+  const deleteProject = async (id) => {
+    if (window.confirm('Bu layihəni silmək istədiyinizə əminsiniz?')) {
+      const response = await authFetch(`/api/projects/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Layihə silinə bilmədi.');
+      }
 
-  // 4. LAYİHƏNİ SİLMƏK
-  const deleteProject = (id) => {
-    if (window.confirm("Bu layihəni silmək istədiyinizə əminsiniz?")) {
-      const updated = projects.filter(p => p.id !== id);
-      saveAndSet(updated);
+      setProjects((prev) => prev.filter((p) => p.id !== id));
     }
   };
 
-  // 5. FİLTRLƏMƏ
-  const filteredProjects = projects.filter(p => 
+  const filteredProjects = projects.filter((p) => 
     p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.client?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return { 
-    projects: filteredProjects, 
-    allProjects: projects, // Statistikalar üçün lazım ola bilər
-    searchTerm, 
-    setSearchTerm, 
-    addProject, 
-    updateProject, // <--- Redaktə üçün mütləq lazımdır
-    deleteProject 
+  return {
+    projects: filteredProjects,
+    allProjects: projects,
+    searchTerm,
+    setSearchTerm,
+    addProject,
+    updateProject,
+    deleteProject,
   };
 };

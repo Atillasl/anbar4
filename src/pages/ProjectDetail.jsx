@@ -16,7 +16,12 @@ const ProjectDetail = () => {
     setIsEditing, 
     editData, 
     setEditData, 
+    loading,
+    error,
     saveProject, 
+    upsertProjectItem,
+    deleteProjectItem,
+    deleteProject,
     calculateDays, 
     finance 
   } = useProjectActions(id);
@@ -24,7 +29,7 @@ const ProjectDetail = () => {
   const [showModal, setShowModal] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
 
-  if (!project) {
+  if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-[#05070A]">
         <div className="text-center space-y-4">
@@ -35,25 +40,50 @@ const ProjectDetail = () => {
     );
   }
 
-  const handleDeleteProject = () => {
+  if (error || !project) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-[#05070A] p-4">
+        <div className="text-center space-y-5 bg-white dark:bg-[#0D1117] rounded-3xl p-8 border border-slate-200 dark:border-white/10 max-w-xl w-full">
+          <p className="font-black text-red-500 uppercase tracking-widest text-xs">Layihə açıla bilmədi</p>
+          <p className="text-slate-500 dark:text-slate-400 font-bold">{error || 'Məlumat tapılmadı.'}</p>
+          <button
+            onClick={() => navigate('/projects')}
+            className="px-6 py-3 rounded-2xl bg-yellow-500 text-black font-black uppercase text-xs tracking-widest"
+          >
+            Layihələrə qayıt
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleDeleteProject = async () => {
     if (window.confirm("Bu layihəni tamamilə silmək istədiyinizə əminsiniz?")) {
-      const projects = JSON.parse(localStorage.getItem('my_projects') || '[]');
-      const filtered = projects.filter(p => p.id !== Number(id));
-      localStorage.setItem('my_projects', JSON.stringify(filtered));
-      navigate('/projects');
+      try {
+        await deleteProject();
+        navigate('/projects');
+      } catch (error) {
+        alert(error.message || 'Layihə silinə bilmədi.');
+      }
     }
   };
 
-  const handleAddItem = (item) => {
-    const items = project.items || [];
-    if (editingItem) {
-      const updated = items.map(i => i.id === item.id ? item : i);
-      saveProject({ ...project, items: updated });
-    } else {
-      saveProject({ ...project, items: [...items, item] });
+  const handleAddItem = async (item) => {
+    try {
+      await upsertProjectItem(item);
+      setShowModal(null);
+      setEditingItem(null);
+    } catch (error) {
+      alert(error.message || 'Item yadda saxlanmadı.');
     }
-    setShowModal(null);
-    setEditingItem(null);
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    try {
+      await deleteProjectItem(itemId);
+    } catch (error) {
+      alert(error.message || 'Item silinə bilmədi.');
+    }
   };
 
   const handleEditItem = (item) => {
@@ -73,50 +103,60 @@ const ProjectDetail = () => {
       <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-[100px] pointer-events-none" />
 
       {/* HEADER BÖLMƏSİ */}
-      <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-4 sm:gap-6 mb-8 sm:mb-12 relative z-10">
-        <div className="space-y-4">
-          <button 
-            onClick={() => navigate('/projects')} 
-            className="flex items-center text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-yellow-600 dark:hover:text-yellow-500 transition-colors group"
-          >
-            <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Layihələr siyahısına qayıt
-          </button>
-          
-          {isEditing ? (
-            <input 
-              className="text-4xl font-black bg-white dark:bg-[#0D1117] border-2 border-yellow-500 p-3 rounded-2xl italic uppercase outline-none shadow-xl shadow-yellow-500/10 dark:text-white" 
-              value={editData.name} 
-              onChange={e => setEditData({...editData, name: e.target.value})} 
-            />
-          ) : (
-            <h1 className="text-5xl font-black text-slate-900 dark:text-white italic uppercase tracking-tighter leading-none">
-              {project.name}<span className="text-yellow-500">.</span>
-            </h1>
-          )}
-        </div>
+      <header className="flex flex-col gap-4 sm:gap-6 mb-8 sm:mb-12 relative z-10">
+        <button 
+          onClick={() => navigate('/projects')} 
+          className="flex items-center text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:text-yellow-600 dark:hover:text-yellow-500 transition-colors group w-fit"
+        >
+          <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" /> Layihələr siyahısına qayıt
+        </button>
 
-        <div className="flex gap-3">
-          {isEditing ? (
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            {isEditing ? (
+              <input 
+                className="text-2xl sm:text-3xl md:text-4xl font-black bg-white dark:bg-[#0D1117] border-2 border-yellow-500 p-3 rounded-2xl italic uppercase outline-none shadow-xl shadow-yellow-500/10 dark:text-white w-full" 
+                value={editData.name} 
+                onChange={e => setEditData({...editData, name: e.target.value})} 
+              />
+            ) : (
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white italic uppercase tracking-tighter leading-none">
+                {project.name}<span className="text-yellow-500">.</span>
+              </h1>
+            )}
+          </div>
+
+          <div className="flex gap-2 sm:gap-3 flex-shrink-0">
+            {isEditing ? (
+              <button 
+                onClick={async () => {
+                  try {
+                    await saveProject(editData);
+                    setIsEditing(false);
+                  } catch (error) {
+                    alert(error.message || 'Layihə yadda saxlanmadı.');
+                  }
+                }} 
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+              >
+                <Save size={16}/> Yadda Saxla
+              </button>
+            ) : (
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/5 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-700 dark:text-yellow-500 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm"
+              >
+                <Edit3 size={16}/> Redaktə et
+              </button>
+            )}
             <button 
-              onClick={() => { saveProject(editData); setIsEditing(false); }} 
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+              onClick={handleDeleteProject}
+              className="bg-white dark:bg-[#0D1117] border border-red-100 dark:border-white/5 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-500/5 transition-all shadow-sm"
             >
-              <Save size={16}/> Yadda Saxla
+              <Trash2 size={16}/>
+              <span className="hidden sm:inline ml-1">Sil</span>
             </button>
-          ) : (
-            <button 
-              onClick={() => setIsEditing(true)} 
-              className="bg-white dark:bg-[#0D1117] border border-slate-200 dark:border-white/5 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-700 dark:text-yellow-500 flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm"
-            >
-              <Edit3 size={16}/> Redaktə et
-            </button>
-          )}
-          <button 
-            onClick={handleDeleteProject}
-            className="bg-white dark:bg-[#0D1117] border border-red-100 dark:border-white/5 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-500/5 transition-all shadow-sm"
-          >
-            <Trash2 size={16}/> Sil
-          </button>
+          </div>
         </div>
       </header>
 
@@ -146,18 +186,18 @@ const ProjectDetail = () => {
 
           {/* AVADANLIQ MANİFESTİ */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center px-4">
+            <div className="flex flex-wrap justify-between items-center px-2 sm:px-4 gap-3">
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Avadanlıq Siyahısı</h2>
               <div className="flex gap-2">
                 <button 
                   onClick={() => { setShowModal('internal'); setEditingItem(null); }}
-                  className="bg-yellow-500 text-black p-2 px-5 rounded-xl text-[9px] font-black uppercase flex items-center gap-2 hover:bg-yellow-600 transition-colors shadow-lg shadow-yellow-500/10"
+                  className="bg-yellow-500 text-black p-2 px-4 sm:px-5 rounded-xl text-[9px] font-black uppercase flex items-center gap-1 sm:gap-2 hover:bg-yellow-600 transition-colors shadow-lg shadow-yellow-500/10"
                 >
                   <PlusCircle size={12}/> Anbardan
                 </button>
                 <button 
                   onClick={() => { setShowModal('external'); setEditingItem(null); }}
-                  className="bg-white dark:bg-[#0D1117] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 p-2 px-5 rounded-xl text-[9px] font-black uppercase flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                  className="bg-white dark:bg-[#0D1117] text-slate-900 dark:text-white border border-slate-200 dark:border-white/10 p-2 px-4 sm:px-5 rounded-xl text-[9px] font-black uppercase flex items-center gap-1 sm:gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                 >
                   <PlusCircle size={12}/> Kənardan
                 </button>
@@ -166,7 +206,7 @@ const ProjectDetail = () => {
             
             <ProjectManifest 
               items={project.items || []} 
-              onUpdate={(newItems) => saveProject({...project, items: newItems})} 
+              onDeleteItem={handleDeleteItem}
               onEditItem={handleEditItem}
             />
           </div>
@@ -178,7 +218,7 @@ const ProjectDetail = () => {
             <FinanceCard finance={finance} />
             
             {/* Tarix Kartı */}
-            <div className="p-8 bg-white dark:bg-[#0D1117] rounded-[2.5rem] border border-slate-200 dark:border-white/5 text-center shadow-sm">
+            <div className="p-6 sm:p-8 bg-white dark:bg-[#0D1117] rounded-[2rem] sm:rounded-[2.5rem] border border-slate-200 dark:border-white/5 text-center shadow-sm">
               <div className="flex justify-center mb-4">
                 <div className="p-3 bg-yellow-500/10 rounded-full text-yellow-600">
                    <Calendar size={20} />
@@ -187,7 +227,7 @@ const ProjectDetail = () => {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">
                 Layihə müddəti
               </p>
-              <p className="text-slate-900 dark:text-white font-black italic uppercase text-lg mt-1 tracking-tighter">
+              <p className="text-slate-900 dark:text-white font-black italic uppercase text-base sm:text-lg mt-1 tracking-tighter break-all">
                 {project.startDate} <span className="text-yellow-500">—</span> {project.endDate}
               </p>
             </div>

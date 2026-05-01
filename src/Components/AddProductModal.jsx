@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Package, DollarSign, Tag, Zap, ShieldCheck } from 'lucide-react';
+import { X, Upload, Package, DollarSign, Tag, Zap } from 'lucide-react';
 import { handleNumberInput } from '../utils/numberValidation';
 
 const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
@@ -8,7 +8,7 @@ const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
     name: '',
     category: '',
     price: '',
-    costPrice: '', // Maya dəyəri
+    status: 'Available',
     image: null
   });
 
@@ -16,7 +16,7 @@ const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
     if (initialData) {
       setFormData(initialData);
     } else {
-      setFormData({ name: '', category: '', price: '', costPrice: '', image: null });
+      setFormData({ name: '', category: '', price: '', status: 'Available', image: null });
     }
   }, [initialData, isOpen]);
 
@@ -33,14 +33,18 @@ const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.price || !formData.costPrice) {
-      return alert("Ad, Maya dəyəri və İcarə qiyməti mütləqdir!");
+    if (!formData.name || !formData.price) {
+      return alert("Ad və İcarə qiyməti mütləqdir!");
     }
-    
-    onAdd(formData); // Bu həm add, həm də update funksiyasını təmsil edə bilər
-    onClose();
+
+    try {
+      await onAdd(formData);
+      onClose();
+    } catch (error) {
+      alert(error.message || 'Əməliyyat zamanı xəta baş verdi.');
+    }
   };
 
   return (
@@ -99,7 +103,7 @@ const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div>
             {/* KATEQORİYA */}
             <div className="relative">
               <Tag className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600" size={16} />
@@ -111,23 +115,21 @@ const AddProductModal = ({ isOpen, onClose, onAdd, initialData }) => {
                 onChange={e => setFormData({...formData, category: e.target.value})}
               />
             </div>
+          </div>
 
-            {/* MAYA DƏYƏRİ (Sənin istədiyin yeni xana) */}
-            <div className="relative">
-              <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 text-red-500/50" size={16} />
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="Maya (₼)"
-                className="w-full p-5 pl-12 bg-slate-50 dark:bg-white/5 rounded-2xl border-none font-bold outline-none dark:text-white text-xs focus:ring-2 ring-red-500/10 transition-all border-b-2 border-transparent focus:border-red-500/30"
-                value={formData.costPrice}
-                onChange={e => {
-                  handleNumberInput(e);
-                  setFormData({...formData, costPrice: e.target.value});
-                }}
-                required
-              />
-            </div>
+          {/* VƏZİYYƏT */}
+          <div className="relative">
+            <select
+              className="w-full p-5 bg-slate-50 dark:bg-white/5 rounded-2xl border-none font-bold outline-none dark:text-white text-sm focus:ring-2 ring-yellow-500/20 transition-all appearance-none cursor-pointer"
+              value={formData.status}
+              onChange={e => setFormData({...formData, status: e.target.value})}
+            >
+              <option value="Available">✅ Mövcuddur (Anbarda)</option>
+              <option value="Rented">📤 İcarədədir</option>
+              <option value="Maintenance">🔧 Təmirdədir</option>
+              <option value="Reserved">🔖 Rezervdədir</option>
+              <option value="Retired">❌ İstifadəsiz / Silinib</option>
+            </select>
           </div>
 
           {/* İCARƏ QİYMƏTİ */}

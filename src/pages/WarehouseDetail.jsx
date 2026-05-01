@@ -22,7 +22,6 @@ const WarehouseDetail = () => {
     addProduct, 
     updateProduct, // Bu funksiya hook-da olmalıdır
     deleteProduct, 
-    searchTerm, 
     setSearchTerm 
   } = useWarehouse(id);
 
@@ -42,6 +41,14 @@ const WarehouseDetail = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingProduct(null);
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    try {
+      await deleteProduct(productId);
+    } catch (error) {
+      alert(error.message || 'Məhsul silinə bilmədi.');
+    }
   };
 
   return (
@@ -119,7 +126,7 @@ const WarehouseDetail = () => {
             <div key={product.id} className="transition-all duration-300">
               <ProductCard 
                 product={product} 
-                onDelete={deleteProduct} 
+                onDelete={handleDeleteProduct} 
                 onEdit={() => handleEditClick(product)} // Redaktə funksiyasını bura bağladıq
               />
             </div>

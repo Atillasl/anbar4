@@ -1,6 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { X, Database, ExternalLink } from 'lucide-react';
 import { handleNumberInput } from '../utils/numberValidation';
+import { authFetch } from '../utils/apiClient';
+
+const mapWarehouse = (item) => ({
+  id: item.id,
+  name: item.name,
+  description: item.description,
+});
+
+const mapWarehouseProduct = (item) => ({
+  id: item.id,
+  name: item.name,
+  price: item.price,
+  costPrice: item.cost_price,
+  status: item.status,
+});
 
 const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initialData, isOpen }) => {
   const [warehouses, setWarehouses] = useState([]);
@@ -8,7 +23,7 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
   const [whProducts, setWhProducts] = useState([]);
   
   const [newItem, setNewItem] = useState({
-    id: initialData?.id || Date.now(),
+    id: initialData?.id || null,
     productId: initialData?.productId || '',
     warehouseId: initialData?.warehouseId || '',
     name: initialData?.name || '',
@@ -21,17 +36,50 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
   });
 
   useEffect(() => {
-    const whs = JSON.parse(localStorage.getItem('my_warehouses') || '[]');
-    setWarehouses(whs);
-  }, []);
+    const loadWarehouses = async () => {
+      try {
+        const response = await authFetch('/api/warehouses');
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setWarehouses([]);
+          return;
+        }
+
+        setWarehouses(Array.isArray(data.warehouses) ? data.warehouses.map(mapWarehouse) : []);
+      } catch (error) {
+        console.error('Anbarlar yüklənmədi:', error);
+        setWarehouses([]);
+      }
+    };
+
+    if (isOpen && mode === 'internal') {
+      loadWarehouses();
+    }
+  }, [isOpen, mode]);
 
   useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await authFetch(`/api/warehouses/${selectedWH}/products`);
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setWhProducts([]);
+          return;
+        }
+
+        setWhProducts(Array.isArray(data.products) ? data.products.map(mapWarehouseProduct) : []);
+      } catch (error) {
+        console.error('Anbar məhsulları yüklənmədi:', error);
+        setWhProducts([]);
+      }
+    };
+
     if (selectedWH) {
-      const prods = JSON.parse(localStorage.getItem(`products_wh_${selectedWH}`) || '[]');
-      setWhProducts(prods);
-    } else {
-      setWhProducts([]);
+      loadProducts();
+      return;
     }
+
+    setWhProducts([]);
   }, [selectedWH]);
 
   useEffect(() => {
@@ -40,7 +88,7 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
     if (initialData) {
       setSelectedWH(initialData?.warehouseId ? String(initialData.warehouseId) : '');
       setNewItem({
-        id: initialData?.id || Date.now(),
+        id: initialData?.id || null,
         productId: initialData?.productId || '',
         warehouseId: initialData?.warehouseId || '',
         name: initialData?.name || '',
@@ -56,7 +104,7 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
 
     setSelectedWH('');
     setNewItem({
-      id: Date.now(),
+      id: null,
       productId: '',
       warehouseId: '',
       name: '',
@@ -79,28 +127,30 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
     setNewItem(updated);
   };
 
-  const handleDaysChange = (value) => {
-    const cleaned = value.replace(/[^0-9]/g, '');
-    setNewItem({ ...newItem, days: cleaned ? Number(cleaned) : 1 });
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (mode === 'internal' && (!newItem.productId || !selectedWH)) {
       return alert('Anbar və məhsul seçin!');
     }
     if (!newItem.name || newItem.pricePerDay <= 0) {
       return alert('Məlumatları tam doldurun!');
     }
-    onAdd({
-      ...newItem,
-      warehouseId: mode === 'internal' ? Number(selectedWH) : newItem.warehouseId,
-      provider: mode === 'internal' ? 'Mənim Anbarım' : newItem.provider,
-      total: Number(newItem.days) * Number(newItem.pricePerDay),
-      costTotal: Number(newItem.days) * Number(newItem.costPerDay || 0),
-      type: mode
-    });
-    onClose();
+
+    try {
+      await onAdd({
+        ...newItem,
+        warehouseId: mode === 'internal' ? Number(selectedWH) : newItem.warehouseId,
+        provider: mode === 'internal' ? 'Mənim Anbarım' : newItem.provider,
+        total: Number(newItem.days) * Number(newItem.pricePerDay),
+        costTotal: Number(newItem.days) * Number(newItem.costPerDay || 0),
+        type: mode
+      });
+      onClose();
+    } catch (error) {
+      alert(error.message || 'Item əlavə edilə bilmədi.');
+    }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-md z-[100] p-4">
@@ -125,6 +175,11 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
                 <option value="">Anbar Seçin</option>
                 {warehouses.map(wh => <option key={wh.id} value={wh.id}>{wh.name}</option>)}
               </select>
+              {warehouses.length === 0 && (
+                <p className="text-[10px] font-black text-orange-500 uppercase tracking-widest px-2">
+                  Aktiv hesab üçün hələ anbar yoxdur. Əvvəlcə Anbarlar bölməsində anbar yaradın.
+                </p>
+              )}
               <select
                 value={newItem.productId || ''}
                 className="w-full p-5 bg-gray-50 dark:bg-slate-900 dark:text-white rounded-2xl font-bold outline-none border border-slate-200 dark:border-slate-800 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900"
@@ -150,37 +205,19 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
                   <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 text-sm font-black uppercase tracking-widest text-slate-600 dark:text-slate-200">
                     Seçilmiş məhsul: {newItem.name}
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {!(mode === 'internal' && initialData) && (
-                      <div className="relative">
-                        <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2 mb-1 inline-block">Maya / gün</label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={newItem.costPerDay}
-                          placeholder="Maya"
-                          className="w-full p-4 bg-orange-50 dark:bg-orange-900/20 rounded-2xl font-bold outline-none border border-orange-100 dark:border-orange-700/50 dark:text-white placeholder:text-slate-500"
-                          onChange={e => {
-                            handleNumberInput(e);
-                            setNewItem({...newItem, costPerDay: e.target.value});
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className={`relative ${mode === 'internal' && initialData ? 'col-span-2' : ''}`}>
-                      <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2 mb-1 inline-block">Qiymət / gün</label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        value={newItem.pricePerDay}
-                        placeholder="Qiymət"
-                        className="w-full p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl font-bold outline-none border border-green-100 dark:border-green-700/50 dark:text-white placeholder:text-slate-500"
-                        onChange={e => {
-                          handleNumberInput(e);
-                          setNewItem({...newItem, pricePerDay: e.target.value});
-                        }}
-                      />
-                    </div>
+                  <div className="relative">
+                    <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2 mb-1 inline-block">Qiymət / gün</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={newItem.pricePerDay}
+                      placeholder="Qiymət"
+                      className="w-full p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl font-bold outline-none border border-green-100 dark:border-green-700/50 dark:text-white placeholder:text-slate-500"
+                      onChange={e => {
+                        handleNumberInput(e);
+                        setNewItem({...newItem, pricePerDay: e.target.value});
+                      }}
+                    />
                   </div>
                 </>
               )}
@@ -188,16 +225,18 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
           ) : (
             <>
               <input placeholder="Tədarükçü adı" className="w-full p-5 bg-gray-50 dark:bg-slate-900 dark:text-white rounded-2xl font-bold outline-none border border-slate-200 dark:border-slate-800 placeholder:text-slate-500" 
+                     value={newItem.provider || ''}
                      onChange={e => setNewItem({...newItem, provider: e.target.value})} />
               <input placeholder="Avadanlıq adı" className="w-full p-5 bg-gray-50 dark:bg-slate-900 dark:text-white rounded-2xl font-bold outline-none border border-slate-200 dark:border-slate-800 placeholder:text-slate-500" 
+                     value={newItem.name || ''}
                      onChange={e => setNewItem({...newItem, name: e.target.value})} />
               <div className="grid grid-cols-2 gap-3">
-                <input type="text" inputMode="numeric" placeholder="Aldığım (Maya)" className="p-5 bg-orange-50 dark:bg-orange-900/20 rounded-2xl font-bold outline-none border border-orange-100 dark:border-orange-700/50 dark:text-white placeholder:text-slate-500"
+                <input type="text" inputMode="numeric" placeholder="Aldığım (Maya)" value={newItem.costPerDay || ''} className="p-5 bg-orange-50 dark:bg-orange-900/20 rounded-2xl font-bold outline-none border border-orange-100 dark:border-orange-700/50 dark:text-white placeholder:text-slate-500"
                        onChange={e => {
                          handleNumberInput(e);
                          setNewItem({...newItem, costPerDay: e.target.value});
                        }} />
-                <input type="text" inputMode="numeric" placeholder="Verdiyim (Qiymət)" className="p-5 bg-green-50 dark:bg-green-900/20 rounded-2xl font-bold outline-none border border-green-100 dark:border-green-700/50 dark:text-white placeholder:text-slate-500"
+                <input type="text" inputMode="numeric" placeholder="Verdiyim (Qiymət)" value={newItem.pricePerDay || ''} className="p-5 bg-green-50 dark:bg-green-900/20 rounded-2xl font-bold outline-none border border-green-100 dark:border-green-700/50 dark:text-white placeholder:text-slate-500"
                        onChange={e => {
                          handleNumberInput(e);
                          setNewItem({...newItem, pricePerDay: e.target.value});
@@ -215,20 +254,6 @@ const AddItemModal = ({ mode, projectDates, onClose, onAdd, calculateDays, initi
               <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2">BİTMƏ</label>
               <input type="date" className="w-full p-4 bg-gray-50 dark:bg-slate-900 dark:text-white rounded-xl font-bold border border-slate-200 dark:border-slate-800" min={newItem.startDate} value={newItem.endDate} onChange={e => handleDateChange('endDate', e.target.value)} />
             </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[9px] font-black text-gray-400 dark:text-slate-400 ml-2">GÜN</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={newItem.days}
-              className="w-full p-4 bg-gray-50 dark:bg-slate-900 dark:text-white rounded-xl font-bold outline-none border border-slate-200 dark:border-slate-800 focus:border-yellow-500"
-              onChange={e => {
-                handleNumberInput(e);
-                handleDaysChange(e.target.value);
-              }}
-            />
           </div>
 
           <div className="bg-indigo-600 p-4 rounded-2xl flex justify-between items-center text-white">
